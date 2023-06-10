@@ -1,14 +1,10 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Quiz List</title>
-</head>
-<body>
-    <h1>Quiz List</h1>
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>Quiz List</h2>
     <ul>
         {% for quiz in quizzes %}
         <li>{{ quiz.name }} - {{ quiz.topic }}</li>
         {% endfor %}
     </ul>
-</body>
-</html>
+{% endblock %}

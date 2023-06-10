@@ -20,9 +20,9 @@ from django.urls import path
 from helloworldapp.views import main_menu, create_quiz, quiz_created, quiz_list
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', main_menu, name='main_menu'),
+    path('', quiz_list, name='quiz_list'),
+    path('quiz-list/', quiz_list, name='quiz_list'),
     path('create-quiz/', create_quiz, name='create_quiz'),
     path('quiz-created/', quiz_created, name='quiz_created'),
-    path('quiz-list/', quiz_list, name='quiz_list'),
+    path('admin/', admin.site.urls),
 ]

@@ -19,10 +19,13 @@ def create_quiz(request):
         if form.is_valid():
             quiz = form.save()
 
-            # Generate question and parse data
+            # Generate and parse multiple questions
+            num_questions = 5
             topic = quiz.topic
-            xml_data = generate_question(topic)
-            question = create_question_with_answers_from_xml(xml_data, quiz)
+
+            for _ in range(num_questions):
+                xml_data = generate_question(topic)
+                create_question_with_answers_from_xml(xml_data, quiz)
 
             return redirect('quiz_created')  # Redirect to success page
     else:
