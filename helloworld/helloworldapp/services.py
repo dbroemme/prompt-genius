@@ -4,7 +4,8 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
-from .models import Question, Answer
+from .models import Quiz, Question, Answer
+import xml.etree.ElementTree as ET
 
 def call_bard(query):
     bard = Bard()
@@ -17,7 +18,7 @@ def call_bard(query):
     lines = answer['content'].split('\n')
     inside_delimeter = False
     for line in lines:
-        if line == "```":
+        if line.startswith("```"):
             inside_delimeter = not inside_delimeter
         elif inside_delimeter:
             if len(line) > 0:
@@ -44,41 +45,72 @@ def generate_question(topic):
     # Define the prompt to generate trivia questions on the given topic
     prompt = f'''Generate one trivia question on the topic of {topic}.
 Provide four possible answers and then indicate the letter of the correct answer.
-Format your response using the following template format.
+Format your response using the following XML template.
 
-Question: [QUESTION_TEXT]
-A) [ANSWER_1]
-B) [ANSWER_2]
-C) [ANSWER_3]
-D) [ANSWER_4]
-
-Correct answer: [CORRECT_ANSWER_LETTER]
+<response>
+<question>[QUESTION_TEXT]</question>
+<a>A) [ANSWER_1]</a>
+<b>B) [ANSWER_2]</b>
+<c>C) [ANSWER_3]</c>
+<d>D) [ANSWER_4]</d>
+<correct_answer>[CORRECT_ANSWER_LETTER]</correct_answer>
+</response>
 '''
 
     #return call_chatgpt(prompt)
     return call_bard(prompt)
 
+
+
 def create_question_with_answers(text, quiz):
-    # Split the text into the question and answer options
-    question_text, answer_options = text.split('?\n')
+    # Extract question text
+    question_text = text.split("Question: ")[1].split("\n")[0].strip()
 
-    # Get the question text
-    question_text = question_text.replace("Question: ", "").strip() + "?"
+    # Extract answer options
+    answer_options = text.split("?\n")[1:]
+    print("answer_options")
+    print(answer_options)
+    answer_texts = []
+    for option in answer_options:
+        answer_texts.append(option.strip())
 
-    # Split the answer options into individual lines
-    answer_lines = answer_options.strip().split('\n')
-
-    # Extract the correct answer letter
-    correct_answer_line = answer_lines.pop().replace("Correct answer: ", "").strip()[0]
+    # Extract correct answer
+    correct_answer = text.split("Correct answer: ")[1].strip()
 
     # Create the question instance
-    question = Question.objects.create(text=question_text, quiz=quiz)
+    question = Question.objects.create(quiz=quiz, text=question_text)
 
-    # Iterate through the answer lines to create answer instances
-    for line in answer_lines:
-        answer_text = line.strip()
-        is_correct = answer_text.startswith(correct_answer_line)
-        answer = Answer.objects.create(question=question, text=answer_text, is_correct=is_correct)
-        print(str(answer))
+    # Create the answer instances
+    for answer_text in answer_texts:
+        is_correct = (answer_text == correct_answer)
+        Answer.objects.create(question=question, text=answer_text, is_correct=is_correct)
+
+    return question
+
+
+def create_question_with_answers_from_xml(xml_text, quiz):
+    # Parse the XML
+    root = ET.fromstring(xml_text)
+
+    # Extract question text
+    question_text = root.find('question').text.strip()
+
+    # Extract answer options
+    answer_texts = []
+    for child in root:
+        if child.tag in ['a', 'b', 'c', 'd']:
+            answer_texts.append(child.text.strip())
+
+    # Extract correct answer
+    correct_answer = root.find('correct_answer').text.strip()
+
+    # Create the question instance
+    question = Question.objects.create(quiz=quiz, text=question_text)
+
+    # Create the answer instances
+    for index, answer_text in enumerate(answer_texts):
+        option = chr(ord('a') + index).upper()
+        is_correct = (option == correct_answer.upper())
+        Answer.objects.create(question=question, text=answer_text, option=option, is_correct=is_correct)
 
     return question

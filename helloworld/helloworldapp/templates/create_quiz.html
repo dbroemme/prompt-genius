@@ -1,14 +1,10 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Create Quiz</title>
-</head>
-<body>
-    <h1>Create Quiz</h1>
-    <form method="POST">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <input type="submit" value="Create">
-    </form>
-</body>
-</html>
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2>Create a Quiz</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Create</button>
+  </form>
+{% endblock %}

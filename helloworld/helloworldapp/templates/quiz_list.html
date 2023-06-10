@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quiz List</title>
+</head>
+<body>
+    <h1>Quiz List</h1>
+    <ul>
+        {% for quiz in quizzes %}
+        <li>{{ quiz.name }} - {{ quiz.topic }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
