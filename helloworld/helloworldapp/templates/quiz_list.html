@@ -4,7 +4,9 @@
     <h2>Quiz List</h2>
     <ul>
         {% for quiz in quizzes %}
-        <li>{{ quiz.name }} - {{ quiz.topic }}</li>
+        <li>
+            <a href="{% url 'take_quiz' quiz.id %}">{{ quiz.name }}</a> - {{ quiz.topic }}
+        </li>
         {% endfor %}
     </ul>
 {% endblock %}

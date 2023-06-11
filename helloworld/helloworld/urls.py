@@ -17,7 +17,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from helloworldapp.views import main_menu, create_quiz, quiz_created, quiz_list
+from helloworldapp.views import main_menu, create_quiz, quiz_created
+from helloworldapp.views import quiz_list, take_quiz, quiz_result
 
 urlpatterns = [
     path('', quiz_list, name='quiz_list'),
@@ -25,4 +26,6 @@ urlpatterns = [
     path('create-quiz/', create_quiz, name='create_quiz'),
     path('quiz-created/', quiz_created, name='quiz_created'),
     path('admin/', admin.site.urls),
+    path('quizzes/<int:quiz_id>/', take_quiz, name='take_quiz'),
+    path('quiz-result/', quiz_result, name='quiz_result'),
 ]
