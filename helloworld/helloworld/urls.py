@@ -27,5 +27,5 @@ urlpatterns = [
     path('quiz-created/', quiz_created, name='quiz_created'),
     path('admin/', admin.site.urls),
     path('quizzes/<int:quiz_id>/', take_quiz, name='take_quiz'),
-    path('quiz-result/', quiz_result, name='quiz_result'),
+    path('quiz-result/<int:quiz_id>/', quiz_result, name='quiz_result'),
 ]

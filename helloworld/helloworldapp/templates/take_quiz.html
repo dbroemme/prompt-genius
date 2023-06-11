@@ -2,22 +2,20 @@
 
 {% block content %}
     <h2>{{ quiz.name }}</h2>
-    <h3>Question {{ forloop.counter }} of {{ questions|length }}</h3>
+    <h3>Question {{ current_question_index }} of {{ total_questions }}</h3>
 
     <form method="POST" action="{% url 'take_quiz' quiz.id %}">
         {% csrf_token %}
 
-        {% for question in questions %}
-            <h4>{{ question.text }}</h4>
-            {% for answer in question.answers.all %}
-                <div>
-                    <input type="radio" id="{{ answer.id }}" name="{{ question.id }}"
-                           value="{{ answer.id }}">
-                    <label for="{{ answer.id }}">{{ answer.text }}</label>
-                </div>
-            {% endfor %}
+        <h4>{{ question.text }}</h4>
+
+        {% for answer in question.answers.all %}
+            <div>
+                <input type="radio" id="answer_{{ answer.id }}" name="answer" value="{{ answer.id }}">
+                <label for="answer_{{ answer.id }}">{{ answer.text }}</label>
+            </div>
         {% endfor %}
 
-        <button type="submit">Submit</button>
+        <button type="submit">Next</button>
     </form>
 {% endblock %}

@@ -1,17 +1,10 @@
-from django.shortcuts import render
-
 # Create your views here.
 from django.http import HttpResponse
-from django.shortcuts import render, get_object_or_404
-from django.shortcuts import render, redirect
+from django.shortcuts import render, get_object_or_404, redirect
 from .forms import QuizForm
 from .models import Quiz, Question, Answer
 from .services import generate_question, create_question_with_answers_from_xml
 
-
-from django.shortcuts import render, redirect
-from .forms import QuizForm
-from .services import generate_question, create_question_with_answers_from_xml
 
 def create_quiz(request):
     if request.method == 'POST':
@@ -38,41 +31,66 @@ def quiz_created(request):
     return render(request, 'quiz_created.html')
 
 def quiz_list(request):
+    if 'current_question_index' in request.session:
+        print("Removing current question index from session")
+        del request.session['current_question_index']
+    if 'correct_answers' in request.session:
+        print("Removing correct answers from session")
+        del request.session['correct_answers']
+    display_session_keys(request)
     quizzes = Quiz.objects.all()
     return render(request, 'quiz_list.html', {'quizzes': quizzes})
-
 
 def take_quiz(request, quiz_id):
     quiz = get_object_or_404(Quiz, pk=quiz_id)
     questions = quiz.questions.all()
     total_questions = questions.count()
-    correct_answers = 0
+    current_question_index = request.session.get('current_question_index', 0)
+    correct_answers = request.session.get('correct_answers', 0)
 
     if request.method == 'POST':
-        # Handle form submission
-        for question in questions:
-            user_answer = request.POST.get(str(question.id))
-            if user_answer:
-                answer = get_object_or_404(Answer, pk=user_answer)
-                if answer.is_correct:
-                    correct_answers += 1
+        user_answer = request.POST.get('answer')
 
-        # Calculate quiz score or perform any desired logic
-        score = (correct_answers / total_questions) * 100
+        if user_answer:
+            current_question = questions[current_question_index]
+            answer = get_object_or_404(Answer, pk=user_answer)
 
-        # Render result template with the quiz score
-        return render(request, 'quiz_result.html', {'quiz': quiz, 'score': score})
+            if answer.is_correct:
+                correct_answers += 1
 
-    # Render the quiz form template with the questions and possible answers
-    return render(request, 'take_quiz.html', {'quiz': quiz, 'questions': questions})
+        current_question_index += 1
+        request.session['current_question_index'] = current_question_index
+        request.session['correct_answers'] = correct_answers
+        display_session_keys(request)
 
-from django.shortcuts import render
+        if current_question_index >= total_questions:
+            return redirect('quiz_result', quiz_id=quiz_id)
+
+    else:
+        if 'current_question_index' in request.session:
+            del request.session['current_question_index']
+        if 'correct_answers' in request.session:
+            del request.session['correct_answers']
+
+    current_question = questions[current_question_index]
+
+    context = {
+        'quiz': quiz,
+        'question': current_question,
+        'current_question_index': current_question_index + 1,
+        'total_questions': total_questions,
+    }
+
+    return render(request, 'take_quiz.html', context)
+
+def display_session_keys(request):
+    for a_key in request.session.keys():
+        print("Session " + a_key + ": " + str(request.session[a_key]))
 
 def quiz_result(request, quiz_id):
     quiz = get_object_or_404(Quiz, pk=quiz_id)
-    questions = quiz.questions.all()
-    total_questions = questions.count()
-    correct_answers = 0
+    total_questions = quiz.questions.count()
+    correct_answers = int(request.session['correct_answers'])
 
     # Perform any necessary calculations to determine the number of correct answers
     # You should have this logic implemented based on your specific requirements
@@ -80,7 +98,14 @@ def quiz_result(request, quiz_id):
     # Calculate the score as a percentage
     score = (correct_answers / total_questions) * 100
 
-    return render(request, 'quiz_result.html', {'quiz': quiz, 'questions': questions, 'correct_answers': correct_answers, 'score': score})
+    context = {
+        'quiz': quiz,
+        'total_questions': total_questions,
+        'correct_answers': correct_answers,
+        'score': score,
+    }
+
+    return render(request, 'quiz_result.html', context)
 
 def main_menu(request):
     return render(request, 'menu.html')
