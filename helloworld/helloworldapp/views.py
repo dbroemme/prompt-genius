@@ -1,10 +1,12 @@
 # Create your views here.
 from django.http import HttpResponse
+from django.conf import settings
 from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.views import LoginView
+from django.contrib.auth import authenticate, login
 from .forms import QuizForm
 from .models import Quiz, Question, Answer
 from .services import generate_question, create_question_with_answers_from_xml
-
 
 def create_quiz(request):
     if request.method == 'POST':
@@ -31,6 +33,9 @@ def quiz_created(request):
     return render(request, 'quiz_created.html')
 
 def quiz_list(request):
+    if not request.user.is_authenticated:
+        return register(request)
+
     if 'current_question_index' in request.session:
         print("Removing current question index from session")
         del request.session['current_question_index']
@@ -61,7 +66,6 @@ def take_quiz(request, quiz_id):
         current_question_index += 1
         request.session['current_question_index'] = current_question_index
         request.session['correct_answers'] = correct_answers
-        display_session_keys(request)
 
         if current_question_index >= total_questions:
             return redirect('quiz_result', quiz_id=quiz_id)
@@ -109,3 +113,39 @@ def quiz_result(request, quiz_id):
 
 def main_menu(request):
     return render(request, 'menu.html')
+
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            # Redirect to the desired page after successful login
+            return redirect('quiz_list')
+        else:
+            # Authentication failed
+            return render(request, 'login.html', {'error': 'Invalid credentials'})
+    else:
+        return render(request, 'login.html')
+
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import logout
+from django.shortcuts import render, redirect
+
+def register(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            # Redirect to the desired page after successful registration
+            return redirect('login')
+    else:
+        form = UserCreationForm()
+    return render(request, 'register.html', {'form': form})
+
+def logout_view(request):
+    logout(request)
+    # Redirect to the desired page after logout
+    return redirect('login')
+

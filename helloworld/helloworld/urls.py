@@ -19,8 +19,12 @@ from django.urls import path
 
 from helloworldapp.views import main_menu, create_quiz, quiz_created
 from helloworldapp.views import quiz_list, take_quiz, quiz_result
+from helloworldapp.views import register, logout_view, login_view
 
 urlpatterns = [
+    path('login/', login_view, name='login'),
+    path('logout/', logout_view, name='logout'),
+    path('register/', register, name='register'),
     path('', quiz_list, name='quiz_list'),
     path('quiz-list/', quiz_list, name='quiz_list'),
     path('create-quiz/', create_quiz, name='create_quiz'),
