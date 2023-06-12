@@ -164,7 +164,6 @@ from django.shortcuts import render, get_object_or_404
 from .models import Quiz, Result
 
 def quiz_results_chart(request, quiz_id):
-    print("In quiz_results_chart view")
     quiz = get_object_or_404(Quiz, pk=quiz_id)
     results = Result.objects.filter(quiz=quiz)
 
