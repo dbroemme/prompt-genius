@@ -16,21 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-
-from helloworldapp.views import main_menu, create_quiz, quiz_created
-from helloworldapp.views import quiz_list, take_quiz, quiz_result
-from helloworldapp.views import register, logout_view, login_view, quiz_results_chart
+from helloworldapp.views import register, logout_view, login_view, main_menu
 
 urlpatterns = [
     path('login/', login_view, name='login'),
     path('logout/', logout_view, name='logout'),
     path('register/', register, name='register'),
-    path('', quiz_list, name='quiz_list'),
-    path('quiz-list/', quiz_list, name='quiz_list'),
-    path('create-quiz/', create_quiz, name='create_quiz'),
-    path('quiz-created/', quiz_created, name='quiz_created'),
-    path('admin/', admin.site.urls),
-    path('quizzes/<int:quiz_id>/', take_quiz, name='take_quiz'),
-    path('quiz-result/<int:quiz_id>/', quiz_result, name='quiz_result'),
-    path('quiz/<int:quiz_id>/results/chart/', quiz_results_chart, name='quiz_results_chart'),
+    path('', main_menu, name='main_menu'),
 ]

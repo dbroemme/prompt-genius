@@ -4,7 +4,6 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
-from .models import Quiz, Question, Answer
 import xml.etree.ElementTree as ET
 
 def call_bard(query):
@@ -59,58 +58,3 @@ Format your response using the following XML template.
 
     #return call_chatgpt(prompt)
     return call_bard(prompt)
-
-
-
-def create_question_with_answers(text, quiz):
-    # Extract question text
-    question_text = text.split("Question: ")[1].split("\n")[0].strip()
-
-    # Extract answer options
-    answer_options = text.split("?\n")[1:]
-    print("answer_options")
-    print(answer_options)
-    answer_texts = []
-    for option in answer_options:
-        answer_texts.append(option.strip())
-
-    # Extract correct answer
-    correct_answer = text.split("Correct answer: ")[1].strip()
-
-    # Create the question instance
-    question = Question.objects.create(quiz=quiz, text=question_text)
-
-    # Create the answer instances
-    for answer_text in answer_texts:
-        is_correct = (answer_text == correct_answer)
-        Answer.objects.create(question=question, text=answer_text, is_correct=is_correct)
-
-    return question
-
-
-def create_question_with_answers_from_xml(xml_text, quiz):
-    # Parse the XML
-    root = ET.fromstring(xml_text)
-
-    # Extract question text
-    question_text = root.find('question').text.strip()
-
-    # Extract answer options
-    answer_texts = []
-    for child in root:
-        if child.tag in ['a', 'b', 'c', 'd']:
-            answer_texts.append(child.text.strip())
-
-    # Extract correct answer
-    correct_answer = root.find('correct_answer').text.strip()
-
-    # Create the question instance
-    question = Question.objects.create(quiz=quiz, text=question_text)
-
-    # Create the answer instances
-    for index, answer_text in enumerate(answer_texts):
-        option = chr(ord('a') + index).upper()
-        is_correct = (option == correct_answer.upper())
-        Answer.objects.create(question=question, text=answer_text, option=option, is_correct=is_correct)
-
-    return question
