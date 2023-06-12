@@ -7,6 +7,8 @@ from django.contrib.auth import authenticate, login
 from .forms import QuizForm
 from .models import Quiz, Question, Answer, Result
 from .services import generate_question, create_question_with_answers_from_xml
+from chartjs.views.lines import BaseLineChartView
+
 
 def create_quiz(request):
     if request.method == 'POST':
@@ -155,4 +157,49 @@ def logout_view(request):
     logout(request)
     # Redirect to the desired page after logout
     return redirect('login')
+
+
+import json
+from django.shortcuts import render, get_object_or_404
+from .models import Quiz, Result
+
+def quiz_results_chart(request, quiz_id):
+    print("In quiz_results_chart view")
+    quiz = get_object_or_404(Quiz, pk=quiz_id)
+    results = Result.objects.filter(quiz=quiz)
+
+    # Count the number of results in each grade category
+    grade_counts = {
+        'A': 0,
+        'B': 0,
+        'C': 0,
+        'D': 0,
+        'F': 0
+    }
+
+    for result in results:
+        if result.score >= 90:
+            grade_counts['A'] += 1
+        elif result.score >= 80:
+            grade_counts['B'] += 1
+        elif result.score >= 70:
+            grade_counts['C'] += 1
+        elif result.score >= 60:
+            grade_counts['D'] += 1
+        else:
+            grade_counts['F'] += 1
+
+    # Prepare the data for the chart
+    labels = list(grade_counts.keys())
+    data = list(grade_counts.values())
+
+    context = {
+        'quiz': quiz,
+        'labels': json.dumps(labels),
+        'data': json.dumps(data),
+    }
+
+    return render(request, 'quiz_results_chart.html', context)
+
+
 

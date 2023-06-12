@@ -19,7 +19,7 @@ from django.urls import path
 
 from helloworldapp.views import main_menu, create_quiz, quiz_created
 from helloworldapp.views import quiz_list, take_quiz, quiz_result
-from helloworldapp.views import register, logout_view, login_view
+from helloworldapp.views import register, logout_view, login_view, quiz_results_chart
 
 urlpatterns = [
     path('login/', login_view, name='login'),
@@ -32,4 +32,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('quizzes/<int:quiz_id>/', take_quiz, name='take_quiz'),
     path('quiz-result/<int:quiz_id>/', quiz_result, name='quiz_result'),
+    path('quiz/<int:quiz_id>/results/chart/', quiz_results_chart, name='quiz_results_chart'),
 ]
