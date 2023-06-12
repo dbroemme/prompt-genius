@@ -5,7 +5,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.views import LoginView
 from django.contrib.auth import authenticate, login
 from .forms import QuizForm
-from .models import Quiz, Question, Answer
+from .models import Quiz, Question, Answer, Result
 from .services import generate_question, create_question_with_answers_from_xml
 
 def create_quiz(request):
@@ -101,6 +101,13 @@ def quiz_result(request, quiz_id):
 
     # Calculate the score as a percentage
     score = (correct_answers / total_questions) * 100
+
+    # Save the result to the database
+    result = Result(user=request.user,
+                    quiz=quiz,
+                    correct_answers=correct_answers,
+                    score = score)
+    result.save()
 
     context = {
         'quiz': quiz,
